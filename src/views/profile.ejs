@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head><%- include('partials/head') %>
+        <title>Mi Perfil</title>
+</head>
+
+<body>
+    <nav class="blue darken-2">
+        <div class="nav-wrapper container">
+            <a href="#" class="brand-logo">Mi App</a>
+            <ul class="right">
+                <li><a href="#" onclick="goBack()">Volver</a></li>
+                <li><a href="#" onclick="logout()">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container" style="max-width:600px;margin-top:40px">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Mi cuenta</span>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="name" type="text" />
+                        <label for="name" class="active">Nombre</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="lastName" type="text" />
+                        <label for="lastName" class="active">Apellido</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="email" type="email" disabled />
+                        <label for="email" class="active">Email</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="phoneNumber" type="text" />
+                        <label for="phoneNumber" class="active">Teléfono</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="birthdate" type="text" disabled />
+                        <label for="birthdate" class="active">Fecha de nacimiento</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <p><b>Edad:</b> <span id="age"></span> años</p>
+                        <p><b>Roles:</b> <span id="roles"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/scripts') %>
+        <script>
+            const token = sessionStorage.getItem('token');
+            if (!token) window.location.href = '/signIn';
+
+            function calcAge(birthdate) {
+                const diff = Date.now() - new Date(birthdate).getTime();
+                return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+            }
+
+            async function loadProfile() {
+                const res = await fetch('/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.status === 401) { sessionStorage.clear(); window.location.href = '/signIn'; return; }
+                const user = await res.json();
+                document.getElementById('name').value = user.name;
+                document.getElementById('lastName').value = user.lastName || '';
+                document.getElementById('email').value = user.email;
+                document.getElementById('phoneNumber').value = user.phoneNumber || '';
+                document.getElementById('birthdate').value = user.birthdate ? new Date(user.birthdate).toLocaleDateString() : '';
+                document.getElementById('age').textContent = user.birthdate ? calcAge(user.birthdate) : '-';
+                document.getElementById('roles').textContent = user.roles.join(', ');
+                M.updateTextFields();
+            }
+
+            function goBack() {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                window.location.href = payload.roles.includes('admin') ? '/dashboard/admin' : '/dashboard/user';
+            }
+
+            function logout() { sessionStorage.clear(); window.location.href = '/signIn'; }
+            loadProfile();
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head><%- include('../partials/head') %>
+        <title>Registro</title>
+</head>
+
+<body class="grey lighten-4">
+    <div class="container" style="max-width:560px;margin-top:60px">
+        <div class="card z-depth-2">
+            <div class="card-content">
+                <span class="card-title center-align">Crear cuenta</span>
+                <div id="error-msg" class="red-text center-align" style="display:none"></div>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="name" type="text" />
+                        <label for="name">Nombre</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="lastName" type="text" />
+                        <label for="lastName">Apellido</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="email" type="email" />
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="phoneNumber" type="text" />
+                        <label for="phoneNumber">Teléfono</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="birthdate" type="date" />
+                        <label for="birthdate" class="active">Fecha de nacimiento</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="password" type="password" />
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+                <button class="btn waves-effect waves-light blue darken-2 btn-block" onclick="doSignUp()">
+                    Registrarse <i class="material-icons right">person_add</i>
+                </button>
+                <p class="center-align" style="margin-top:16px">
+                    ¿Ya tienes cuenta? <a href="/signIn">Inicia sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/scripts') %>
+        <script>
+            async function doSignUp() {
+                const errDiv = document.getElementById('error-msg');
+                const body = {
+                    name: document.getElementById('name').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    birthdate: document.getElementById('birthdate').value,
+                    password: document.getElementById('password').value
+                };
+                try {
+                    const res = await fetch('/api/auth/signUp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { errDiv.textContent = data.message; errDiv.style.display = 'block'; return; }
+                    window.location.href = '/signIn';
+                } catch (e) {
+                    errDiv.textContent = 'Error de conexión'; errDiv.style.display = 'block';
+                }
+            }
+        </script>
+</body>
+
+</html>

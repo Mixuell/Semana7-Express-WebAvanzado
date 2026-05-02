@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head><%- include('../partials/head') %>
+        <title>Iniciar Sesión</title>
+</head>
+
+<body class="grey lighten-4">
+    <div class="container" style="max-width:480px;margin-top:80px">
+        <div class="card z-depth-2">
+            <div class="card-content">
+                <span class="card-title center-align">Iniciar Sesión</span>
+                <div id="error-msg" class="red-text center-align" style="display:none"></div>
+                <div class="input-field">
+                    <i class="material-icons prefix">email</i>
+                    <input id="email" type="email" />
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-field">
+                    <i class="material-icons prefix">lock</i>
+                    <input id="password" type="password" />
+                    <label for="password">Password</label>
+                </div>
+                <button class="btn waves-effect waves-light blue darken-2 btn-block" onclick="doSignIn()">
+                    Ingresar <i class="material-icons right">send</i>
+                </button>
+                <p class="center-align" style="margin-top:16px">
+                    ¿No tienes cuenta? <a href="/signUp">Regístrate</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/scripts') %>
+        <script>
+            async function doSignIn() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errDiv = document.getElementById('error-msg');
+                try {
+                    const res = await fetch('/api/auth/signIn', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { errDiv.textContent = data.message; errDiv.style.display = 'block'; return; }
+                    sessionStorage.setItem('token', data.token);
+                    // Decodificar rol del token
+                    const payload = JSON.parse(atob(data.token.split('.')[1]));
+                    if (payload.roles.includes('admin')) window.location.href = '/dashboard/admin';
+                    else window.location.href = '/dashboard/user';
+                } catch (e) {
+                    errDiv.textContent = 'Error de conexión'; errDiv.style.display = 'block';
+                }
+            }
+        </script>
+</body>
+
+</html>
